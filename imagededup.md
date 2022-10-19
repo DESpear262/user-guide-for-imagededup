@@ -1,4 +1,5 @@
-#All hash methods run in about 10 mins on SAC
+# All hash methods run in about 10 mins on SAC. The CNN method ran very slowly (an hour + on SAC as opposed to 10 mins) and crashed before it could save 
+# its output. Not sure if that one has benefits the hash methods don't have, but use advisedly I suppose.
 
 #Significant numbers of false-positive duplicates (non-duplicates flagged)
 from imagededup.methods import DHash
@@ -6,7 +7,7 @@ dhasher = DHash()
 duplicates = dhasher.find_duplicates(image_dir='/fsx/home-despear/home/jdp/simulacra-aesthetic-captions', scores=False, outfile='/fsx/home-despear/dhash_sacdupes.json')
 
 
-# Not many false positives, but not 0 either
+# Not many false positives, but not 0 either. Usable but will eliminate some good data
 from imagededup.methods import DHash
 dhasher = DHash()
 duplicates = dhasher.find_duplicates(image_dir='/fsx/home-despear/home/jdp/simulacra-aesthetic-captions', scores=False, max_distance_threshold=5, outfile='/fsx/home-despear/dhash_mdt5_sacdupes.json')
@@ -60,7 +61,7 @@ duplicates = phasher.find_duplicates(image_dir='/fsx/home-despear/home/jdp/simul
 duplicates = phasher.find_duplicates(image_dir='/fsx/home-despear/home/jdp/simulacra-aesthetic-captions', scores=False, max_distance_threshold=1, outfile='/fsx/home-despear/sacdupes/mdt1_phash_sacdupes.json')
 
 
-#Extremely time intensive, results unknown. Process failed before it finished.
+#Extremely time intensive, results unknown. Process failed before it finished. Only use if you know what you're doing.
 from imagededup.methods import CNN
 cnn_encoder = CNN()
 duplicates = cnn_encoder.find_duplicates(image_dir='/fsx/home-despear/home/jdp/simulacra-aesthetic-captions', min_similarity_threshold=0.85, scores=False, outfile='/fsx/home-despear/CNN_sacdupes.json')
