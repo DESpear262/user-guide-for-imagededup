@@ -1,3 +1,5 @@
+Tl;dr: DHash with MDT=1-3 seems the most useful to me. Code to run DHash with MDT=1 can be found here: https://github.com/DESpear262/user-guide-for-imagededup/blob/main/example-code.py
+
 All hash methods run in about 10 mins on SAC. The CNN method ran very slowly (an hour + on SAC as opposed to 10 mins) and crashed before it could save  its output. Not sure if that one has benefits the hash methods don't have, but use advisedly I suppose. As I couldn't get it to work, I haven't documented it. Official documentation can be found here: https://idealo.github.io/imagededup/user_guide/finding_duplicates/
 
 To use in python, import the method you want to use with `from imagededup.methods import [WHICHEVER METHOD YOU WANT]`. Method options are "DHash", "PHash", "AHash", and "WHash".
@@ -55,62 +57,8 @@ In addition to the `find_duplicates` method, dedup also provides a `find_duplica
 
 ---
 
+The most useful setting I found during testing was DHash with MDT=1. This flagged a significant number of junk images in SAC. I did insufficent testing to determine whether there were significant numbers of unflagged-duplicates, but none of the flagged items I inspected were clear false positives. These are also the settings I used for the example code here: https://github.com/DESpear262/user-guide-for-imagededup/blob/main/example-code.py. That code can be copy/pasted into an instance of Python and should run without any problems. DHash with MDT=2 or 3 are usable if a modest number of false positives are acceptable in order to ensure that all duplicates are removed. With MDT>=5, it flags a considerable number of false positives and should be avoided.
 
-#Significant numbers of false-positive duplicates
-from imagededup.methods import DHash
-dhasher = DHash()
-duplicates = dhasher.find_duplicates(image_dir='/fsx/home-despear/home/jdp/simulacra-aesthetic-captions', scores=False, outfile='/fsx/home-despear/dhash_sacdupes.json')
+WHash and AHash both generated a significant number of false positives, even on MDT=1. If extremely aggressive dupe flagging is necessary, AHash with MDT=1 or =2 may be usable. Above that, I would recommend avoiding them.
 
-
-# Not many false positives, but not 0 either. Usable but will eliminate some good data
-from imagededup.methods import DHash
-dhasher = DHash()
-duplicates = dhasher.find_duplicates(image_dir='/fsx/home-despear/home/jdp/simulacra-aesthetic-captions', scores=False, max_distance_threshold=5, outfile='/fsx/home-despear/dhash_mdt5_sacdupes.json')
-
-
-#No false positives I could find, but all images flagged in SAC were soft gradients or something like that, so possible high rate of false negatives. Will need to test on a different dataset to be sure.
-from imagededup.methods import DHash
-dhasher = DHash()
-duplicates = dhasher.find_duplicates(image_dir='/fsx/home-despear/home/jdp/simulacra-aesthetic-captions', scores=False, max_distance_threshold=1, outfile='/fsx/home-despear/dhash_mdt1_sacdupes.json')
-
-
-#A lot (a LOT) of false positives. Avoid.
-from imagededup.methods import WHash
-whasher = WHash()
-duplicates = whasher.find_duplicates(image_dir='/fsx/home-despear/home/jdp/simulacra-aesthetic-captions', scores=False, outfile='/fsx/home-despear/sacdupes/whash_sacdupes.json')
-
-#Significant false positives. Very likely unusable.
-...
-duplicates = whasher.find_duplicates(image_dir='/fsx/home-despear/home/jdp/simulacra-aesthetic-captions', scores=False, max_distance_threshold=5, outfile='/fsx/home-despear/sacdupes/mdt5_whash_sacdupes.json')
-
-#Usable, but with significant false positives
-...
-duplicates = whasher.find_duplicates(image_dir='/fsx/home-despear/home/jdp/simulacra-aesthetic-captions', scores=False, max_distance_threshold=1, outfile='/fsx/home-despear/sacdupes/mdt1_whash_sacdupes.json')
-
-
-#A lot (a LOT) of false positives. Avoid.
-from imagededup.methods import AHash
-ahasher = AHash()
-duplicates = ahasher.find_duplicates(image_dir='/fsx/home-despear/home/jdp/simulacra-aesthetic-captions', scores=False, outfile='/fsx/home-despear/sacdupes/ahash_sacdupes.json')
-
-#Signicant false positives. Likely unusable.
-...
-duplicates = ahasher.find_duplicates(image_dir='/fsx/home-despear/home/jdp/simulacra-aesthetic-captions', scores=False, max_distance_threshold=5, outfile='/fsx/home-despear/sacdupes/mdt5_ahash_sacdupes.json')
-
-#A lot of false positives but definitely usable. Good option if DHash MDT=1 is insufficently agressive.
-...
-duplicates = ahasher.find_duplicates(image_dir='/fsx/home-despear/home/jdp/simulacra-aesthetic-captions', scores=False, max_distance_threshold=1, outfile='/fsx/home-despear/sacdupes/mdt1_ahash_sacdupes.json')
-
-
-#Detected few duplicates, but almost all were false positives. Avoid.
-from imagededup.methods import PHash
-phasher = PHash()
-duplicates = phasher.find_duplicates(image_dir='/fsx/home-despear/home/jdp/simulacra-aesthetic-captions', scores=False, outfile='/fsx/home-despear/sacdupes/phash_sacdupes.json')
-
-#Very, very few false positives. Likely significant false negatives. Avoid until further experimentation is done.
-...
-duplicates = phasher.find_duplicates(image_dir='/fsx/home-despear/home/jdp/simulacra-aesthetic-captions', scores=False, max_distance_threshold=5, outfile='/fsx/home-despear/sacdupes/mdt5_phash_sacdupes.json')
-
-#No false positives. Likely significant false negatives. Avoid until further experimentation is done.
-...
-duplicates = phasher.find_duplicates(image_dir='/fsx/home-despear/home/jdp/simulacra-aesthetic-captions', scores=False, max_distance_threshold=1, outfile='/fsx/home-despear/sacdupes/mdt1_phash_sacdupes.json')
+PHash had an extremely low duplicate detection rate, even at MDT=10, but even then the flagged images were all false positives. I don't understand what's going on with this algorithm but it seems like it's off the false-positive-avoidance/true-duplicate-identification Pareto frontier to me. If someone who understands what's going on under the hood here wants to explain what this algorithm is useful for, I'd love to know but for now it seems like a strictly worse option than the others, detecting fewer near-duplicates, and getting even those few wrong. Avoid.
